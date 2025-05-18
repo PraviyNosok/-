@@ -11,18 +11,22 @@ def new_socket():
 win_width = screeninfo.get_monitors()[0].width / 2
 win_height = screeninfo.get_monitors()[0].height / 2
 
-pg.display.set_caption("bacteria_client")
-screen = pg.display.set_mode((win_width, win_height))
-
 connection = False
 sock = None
 fps = 60
 tick = 0
 old_vector = ""
+old_radius = 0
 vector = {"x": 0}
 data = {}
 errors = 0
-font = pg.font.Font(None, math.ceil(win_width * (20/640)))
+nick = input("Nickname: ")
+while len(nick) > 8:
+    print("max 8 symbols")
+    nick = input("Nickname: ")
+screen = pg.display.set_mode((win_width, win_height))
+pg.display.set_caption("bacteria_client")
+print(nick)
 new_socket()
 running = True
 clock = pg.time.Clock()
@@ -42,14 +46,14 @@ while running:
     if connection == False and tick == 1:
         try:
             sock.connect(("localhost", 10000))
-            vector["w_vision"], vector["h_vision"] = win_width, win_height
+            vector["w_vision"], vector["h_vision"], vector["name"] = win_width, win_height, nick
             vector["x"], vector["y"], vector["dist"] = 0, 0, 0
             vector = json.dumps(vector)
             connection = True
             tick = 0
             print("successfully connected")
-        except Exception as e:
-            print(e, sock)
+        except:
+            pass
             
     if connection == True:
         vector = json.loads(vector)
@@ -90,14 +94,20 @@ while running:
             if data["radius"] > 0:
                 pg.draw.circle(screen, "black", (win_width // 2, win_height // 2), data["radius"] + 2)
                 pg.draw.circle(screen, data["colour"], (win_width // 2, win_height // 2), data["radius"])
+                if data["radius"] != old_radius:
+                    name = pg.font.Font(None, int(data["radius"] * 0.6)).render(nick, False, "black")
+                    old_radius = data["radius"]
+                screen.blit(name, (win_width // 2 - name.get_width() // 2, win_height // 2 - name.get_height() // 2))
         except:
             pass
 
         for i in data["visible"]:
             try:
-                if data["visible"][i]["radius"] > 0:
-                    pg.draw.circle(screen, "black", (win_width // 2 + data["visible"][i]["dist_x"], win_height // 2 + data["visible"][i]["dist_y"]), data["visible"][i]["radius"] + 2)
+                pg.draw.circle(screen, "black", (win_width // 2 + data["visible"][i]["dist_x"], win_height // 2 + data["visible"][i]["dist_y"]), data["visible"][i]["radius"] + 2)
                 pg.draw.circle(screen, data["visible"][i]["colour"], (win_width // 2 + data["visible"][i]["dist_x"], win_height // 2 + data["visible"][i]["dist_y"]), data["visible"][i]["radius"])
+                if data["visible"][i]["name"] != None:
+                    n = pg.font.Font(None, int(data["visible"][i]["radius"] * 0.6)).render(data["visible"][i]["name"], False, "black")
+                    screen.blit(n, (win_width // 2 + data["visible"][i]["dist_x"] - n.get_width() // 2, win_height // 2 + data["visible"][i]["dist_y"] - n.get_height() // 2))
             except:
                 pass
     

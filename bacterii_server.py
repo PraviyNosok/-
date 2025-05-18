@@ -30,6 +30,7 @@ class Player():
         self.vector = [0, 0]
         self.win_width = 0
         self.win_height = 0
+        self.name = None
     def draw(self):
         pg.draw.circle(screen, self.colour, (win_width * (self.rect.centerx/room_width), win_width * (self.rect.centery/room_height)), win_width * (self.radius/room_width))
     def move(self):
@@ -37,8 +38,13 @@ class Player():
             try:
                 data = json.loads(self.conn.recv(1024).decode())
                 self.vector = [data["x"], data["y"]]
+                if self.name == None:
+                    self.name = data["name"]
             except:
                 pass
+        
+        if self.conn == None and self.name == None:
+            self.name = random.choice(nicks)
 
         elif tick == 1 and self.conn == None:
             self.vector = [random.randint(-100, 100), random.randint(-100, 100)]
@@ -104,7 +110,7 @@ class Player():
                     self.h_vision = self.win_height * self.scale
     def send_data(self):
         if self.conn != None:
-            data = {"radius": self.radius // self.scale,
+            data = {"radius": int(self.radius // self.scale),
                     "colour": self.colour,
                     "visible": self.see()}
             try:
@@ -131,7 +137,8 @@ class Player():
                 visible[f.number] = {"dist_x": (f.rect.centerx - self.rect.centerx) // self.scale,
                                      "dist_y": (f.rect.centery - self.rect.centery) // self.scale,
                                      "radius": f.radius / self.scale,
-                                     "colour": f.colour}
+                                     "colour": f.colour,
+                                     "name": None}
         for player in players:
             if player != self:
                 if ((player.rect.centerx - self.rect.centerx) ** 2 + (player.rect.centery - self.rect.centery) ** 2) ** 0.5 <= self.radius and self.radius > player.radius * 1.1:
@@ -150,7 +157,8 @@ class Player():
                     visible[player.number] = {"dist_x": (player.rect.centerx - self.rect.centerx) // self.scale,
                                               "dist_y": (player.rect.centery - self.rect.centery) // self.scale,
                                               "radius": player.radius // self.scale,
-                                              "colour": player.colour}
+                                              "colour": player.colour,
+                                              "name": player.name}
         if self.conn != None:
             return visible
 
@@ -177,6 +185,7 @@ objects = 0
 mobs_quantity = 25
 food_quantity = room_width * room_height // 80000
 clients = 0
+nicks = ["Физмат", "Химбио", "Гений"]
 for i in range(mobs_quantity):
     objects += 1
     players.append(Player(None, None, (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)), random.randint(0, room_width), random.randint(0, room_height), random.randint(25, 50), None, None))
