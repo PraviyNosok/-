@@ -25,8 +25,8 @@ while len(nick) > 8:
     print("max 8 symbols")
     nick = input("Nickname: ")
 screen = pg.display.set_mode((win_width, win_height))
+nicknames = {}
 pg.display.set_caption("bacteria_client")
-print(nick)
 new_socket()
 running = True
 clock = pg.time.Clock()
@@ -105,9 +105,15 @@ while running:
             try:
                 pg.draw.circle(screen, "black", (win_width // 2 + data["visible"][i]["dist_x"], win_height // 2 + data["visible"][i]["dist_y"]), data["visible"][i]["radius"] + 2)
                 pg.draw.circle(screen, data["visible"][i]["colour"], (win_width // 2 + data["visible"][i]["dist_x"], win_height // 2 + data["visible"][i]["dist_y"]), data["visible"][i]["radius"])
-                if data["visible"][i]["name"] != None:
-                    n = pg.font.Font(None, int(data["visible"][i]["radius"] * 0.6)).render(data["visible"][i]["name"], False, "black")
-                    screen.blit(n, (win_width // 2 + data["visible"][i]["dist_x"] - n.get_width() // 2, win_height // 2 + data["visible"][i]["dist_y"] - n.get_height() // 2))
+                if data["visible"][i].get("name") != None and nicknames.get(i) == None:
+                    if nicknames.get(i) == None:
+                        nicknames[i] = {"old_r": 0}
+                    if nicknames[i]["old_r"] != data["visible"][i]["radius"]:
+                        n = pg.font.Font(None, int(round(data["visible"][i]["radius"] * 0.6))).render(data["visible"][i]["name"], False, "black")
+                        nicknames[i]["nick"] = n
+                        nicknames[i]["old_r"] = data["visible"][i]["radius"]
+                if nicknames[i]["nick"] != None:
+                    screen.blit(nicknames[i]["nick"], (win_width // 2 + data["visible"][i]["dist_x"] - nicknames[i]["nick"].get_width() // 2, win_height // 2 + data["visible"][i]["dist_y"] - nicknames[i]["nick"].get_height() // 2))
             except:
                 pass
     

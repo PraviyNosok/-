@@ -46,7 +46,7 @@ class Player():
         if self.conn == None and self.name == None:
             self.name = random.choice(nicks)
 
-        elif tick == 1 and self.conn == None:
+        elif tick == 2 and self.conn == None:
             self.vector = [random.randint(-100, 100), random.randint(-100, 100)]
 
         if self.conn != None and self.w_vision == 0:
@@ -137,8 +137,7 @@ class Player():
                 visible[f.number] = {"dist_x": (f.rect.centerx - self.rect.centerx) // self.scale,
                                      "dist_y": (f.rect.centery - self.rect.centery) // self.scale,
                                      "radius": f.radius / self.scale,
-                                     "colour": f.colour,
-                                     "name": None}
+                                     "colour": f.colour}
         for player in players:
             if player != self:
                 if ((player.rect.centerx - self.rect.centerx) ** 2 + (player.rect.centery - self.rect.centery) ** 2) ** 0.5 <= self.radius and self.radius > player.radius * 1.1:
